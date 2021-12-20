@@ -3,6 +3,7 @@ Find websites and scan it to reference it on Magoole.
 
 # Try locally:
 1. Install requirements
+
 ```shell
 pip install -r requirements.txt
 ```
@@ -15,6 +16,7 @@ pip install -r requirements.txt
 <br>
 <br>
 3. Run python file
+
 ```shell
 cd /path/to/scanner && python3 url_search.py/scan.py
 ```
