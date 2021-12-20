@@ -1,7 +1,7 @@
 import ipaddress
 import pymongo
 import requests
-from ping import ping
+from pythonping import ping
 
 PASSWORD = open('.mongopass').read()
 client = pymongo.MongoClient(f"mongodb+srv://{PASSWORD}@cluster0.k244v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
@@ -19,7 +19,7 @@ def addData(url):
 
 def isWebsite(ip):
     try:
-        assert ping(ip)
+        assert ping(ip, count=1)
         print(ip)
         response = requests.get(f'http://{ip}', headers={'FROM': 'Magoole, free and open source search motor'})
         print(response.url)
