@@ -11,7 +11,12 @@ sites = db.sites
 to_scan = db.to_scan
 
 
+def isValidString(chars):
+    return chars is not None and chars != '' and not chars.startswith('"')
+
+
 def get_word_list(html):
+    # print(html)
     try:
         words = re.findall("(?<=title=\")(.*?)(?=\s*\")", str(html))
     except Exception:
@@ -30,17 +35,24 @@ def get_word_list(html):
             name = name.split("\"")[-1]
     except Exception:
         name = "Unknown"
-    words = [urllib.parse.unquote(word) for word in words]
-    alts = [urllib.parse.unquote(alt) for alt in alts]
+    reformatted_words = []
+    reformatted_alts = []
+    for word in words:
+        if isValidString(word):
+            reformatted_words.append(urllib.parse.unquote(word))
+    for alt in alts:
+        if isValidString(alt):
+            reformatted_alts.append(urllib.parse.unquote(alt))
     desc = urllib.parse.unquote(desc)
     name = urllib.parse.unquote(name)
-    return words, alts, desc, name
+    return reformatted_words, reformatted_alts, desc, name
 
 
 def scan_websites():
     for scan in to_scan.find():
         html = requests.get(scan['url']).content
-        words, alts, desc, name = get_word_list(html)
+        words, alts, desc, name = get_word_list(html.decode('utf-8'))
+        print(words, alts, desc, name)
         sites.insert_one({"url": scan['url'], "title": name, "word_list": words, "alt_list": alts, "description": desc})
         to_scan.delete_one({'url': scan['url']})
     print('End of urls')
