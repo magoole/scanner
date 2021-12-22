@@ -19,8 +19,8 @@ def addData(url):
 
 def isWebsite(ip):
     try:
-        assert ping(ip, count=1)
-        print(ip)
+        assert ping(ip, count=1).success()
+        print('Find ip: ', ip)
         response = requests.get(f'http://{ip}', headers={'FROM': 'Magoole, free and open source search motor'})
         print(response.url)
         if response.url == f'http://{ip}/':
@@ -49,6 +49,3 @@ if __name__ == '__main__':
         IPExist, url = isWebsite(IP)
         if IPExist:
             print(f'{IP}: {url}')
-        if ip_int % 100000 == 0:
-            print(IP)
-        # print(ip_int % 100).
