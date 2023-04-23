@@ -1,5 +1,5 @@
-# Magoole scanner and url_searcher
-Find websites and scan it to reference it on Magoole.
+# Magoole scanner
+This repository uses DNS query, ip scan, reverse ip lookup, crawling and more technologies to find websites and crawl them to reference them on Magoole.
 
 # Try locally:
 1. Install requirements
