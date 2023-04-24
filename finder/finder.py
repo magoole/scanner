@@ -11,7 +11,7 @@ db = client.magoole
 crawl_queue = db.queue
 
 
-def addWebsiteToQueue(url) -> None:
+def addWebsiteToQueue(url: str) -> None:
     """
     Add website url to the crawling queue.
     :param url: url of the wbesite to add
@@ -24,7 +24,7 @@ def addWebsiteToQueue(url) -> None:
     print('Website is already queued')
 
 
-def hasWebServer(domain) -> Tuple[bool, str]:
+def hasWebServer(domain: str) -> Tuple[bool, str]:
     """
     Check if the `domain` runs a webserver.
     :param domain: the domain to check
@@ -45,7 +45,7 @@ def hasWebServer(domain) -> Tuple[bool, str]:
         return False, ''
 
 
-def isDomain(domain) -> bool:
+def isDomain(domain: str) -> bool:
     """
     Check if the `domain` is registered by querying dns.
     :param domain:
@@ -65,7 +65,7 @@ def isDomain(domain) -> bool:
             return isDomain(domain)
 
 
-def processCheck(domain, is_subdomain=False) -> None:
+def processCheck(domain: str, is_subdomain: bool = False) -> None:
     """
     Check if `domain` exist, if `domain` runs a webserver and if, add it to crawl queue
     :param domain: domain to check
@@ -86,7 +86,7 @@ def processCheck(domain, is_subdomain=False) -> None:
                     searchSubdomains(domain, '', 63)
 
 
-def search(domain, ext) -> None:
+def search(domain: str, ext: str) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
@@ -100,10 +100,11 @@ def search(domain, ext) -> None:
             search(domain, ext)
 
 
-def searchSubdomains(domain, subdomain, limit) -> None:
+def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
     """
     Recursive bruteforce search
-    :param domain: last fetched domain
+    :param domain: the main domain with extension
+    :param subdomain: the last fetched subdomain
     :param limit: char limit for subdomain
     :return: None
     """
