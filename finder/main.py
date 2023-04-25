@@ -1,6 +1,9 @@
+import json
+import os.path
 import string
+import threading
 import time
-from typing import List, Tuple
+from typing import Tuple
 import dns
 import pymongo
 import requests
@@ -58,11 +61,14 @@ def isDomain(domain: str) -> bool:
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
             return False
         except dns.resolver.Timeout as error:
-            print(f"DNS Timed out {error.args}")
+            print(f'⚠️ DNS Timed out: "{error.args[0]}"')
         except dns.resolver.NoNameservers:
             # Getting timed out
             time.sleep(0.1)
             return isDomain(domain)
+        except dns.name.LabelTooLong as e:
+            print(domain)
+            raise e
 
 
 def processCheck(domain: str, is_subdomain: bool = False) -> None:
@@ -72,11 +78,14 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
     :param is_subdomain: optional parameter for output formatting
     :return: None
     """
+    if domain.split('.')[-2].endswith('-'):
+        # Ignore because it's not a valid DNS label
+        return
     if isDomain(domain):
         print(f'Found domain name "{domain}"') if not is_subdomain else ...
         has_web_server, url = hasWebServer(domain)
         if has_web_server:
-            print(f'- [+] `{url}`') if not is_subdomain else print(f'\t- [+] `{url}`')
+            print(f'- [+] `{url}`')
             addWebsiteToQueue(url)
             if SUBDOMAINS:
                 # 63 is the max chars between two dot in a domain
@@ -93,11 +102,11 @@ def search(domain: str, ext: str) -> None:
     :param ext: domain extension
     :return: None
     """
-    if len(domain) <= CHAR_LIMIT:
+    if len(domain + ext) <= CHAR_LIMIT and len(domain) + 1 < 63:
         for char in CHARS:
-            domain = domain + char
-            processCheck(domain + ext)
-            search(domain, ext)
+            new_domain = domain + char
+            processCheck(new_domain + ext)
+            search(new_domain, ext)
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
@@ -111,19 +120,44 @@ def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
     if len(subdomain) <= limit:
         for char in CHARS:
             subdomain = subdomain + char
-            print(subdomain)
             full_domain = f'{subdomain}.{domain}'
             processCheck(full_domain, True)
             searchSubdomains(domain, subdomain, limit)
 
 
+def searchFor(ext) -> None:
+    """
+    Search for domains.`ext`
+    :param ext: domain extension
+    :return: None
+    """
+    print(f'🔄 Searching for `{ext}` domains:')
+    search('', ext)
+    print(f'✅ Finished for `{ext}`.')
+
+
 if __name__ == '__main__':
-    EXTENSIONS = ['.fr', '.com', '.eu.org', '.tech', '.info', '.dev']
-    DNS_RECORDS_TO_CHECK = ['A', 'AAAA']
-    # CHAR_LIMIT = 253 # Real char limit in registration
-    CHAR_LIMIT = 10
-    SUBDOMAINS = False
-    CHARS = list(f"{string.ascii_lowercase}{string.digits}‐")  # possibles chars
+    if os.path.isfile('finder/config.json'):
+        config = json.loads(open('finder/config.json').read())
+    elif os.path.isfile('config.json'):
+        config = json.loads(open('config.json').read())
+    else:
+        print("❌ No config files found, exiting.")
+        exit()
+    EXTENSIONS = config['DOMAIN_EXTENSIONS']
+    DNS_RECORDS_TO_CHECK = config['DNS']['records']
+    CHAR_LIMIT = config['DNS']['domain_max_length']
+    SUBDOMAINS = config['DNS']['subdomains']
+    THREADING = config['THREADING']['enabled']
+    CHARS = list(f"{string.ascii_lowercase}{string.digits}-")  # possibles chars
+    PROCESSES = []
     for ext in EXTENSIONS:
-        print(f'Search for `{ext}` domains:')
-        search('', ext)
+        if THREADING:
+            thread = threading.Thread(target=searchFor, args=[ext], name=f'Domain scanning: `{ext}`')
+            PROCESSES.append(thread)
+            continue
+        searchFor(ext)
+    for thread in PROCESSES:
+        thread.start()
+        print(f'"{thread.name}" started')
+        thread.join()

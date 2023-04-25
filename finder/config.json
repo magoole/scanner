@@ -1,0 +1,12 @@
+{
+  "DNS": {
+    "domain_max_length": 253,
+    "subdomains": false,
+    "records": ["A", "AAAA"]
+  },
+
+  "THREADING": {
+    "enabled": true
+  },
+  "DOMAIN_EXTENSIONS": [".fr", ".com", ".eu.org", ".tech", ".info", ".dev"]
+}
