@@ -8,7 +8,7 @@ import dns
 import pymongo
 import requests
 
-PASSWORD = open('.mongopass').read()
+PASSWORD = open('.mongopass').read().replace('\n', '')
 client = pymongo.MongoClient(f"mongodb+srv://{PASSWORD}@cluster0.k244v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client.magoole
 crawl_queue = db.queue
