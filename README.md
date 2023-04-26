@@ -1,4 +1,4 @@
-![](https://repository-images.githubusercontent.com/421378452/7aaab2c1-c081-452e-b741-e6da0d37997b)
+![Banner](https://repository-images.githubusercontent.com/421378452/7aaab2c1-c081-452e-b741-e6da0d37997b)
 <div align="center">
 
 # Magoole finder and crawler
