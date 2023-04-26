@@ -2,11 +2,28 @@
 <div align="center">
 
 # Magoole finder and crawler
-This repository uses DNS query, bruteforce like domain search, crawling and more technologies to find websites and crawl and reference them on Magoole.
+Navigate through internet to find and crawl websites.
 
 </div>
+This repository uses DNS query, bruteforce like domain search, crawling and more technologies to find websites and crawl and reference them on Magoole.
+
+## Table of content
+- [Credits](#credits-and-acknowledgement)
+- [How it works ?](#how-it-works-)
+  - [Finder](#finder)
+  - [Crawler](#crawler)
+- [Try it locally](#try-locally-)
+
+## Credits and acknowledgement
+- Source code under [CeCLL Licence V2.1](https://github.com/magoole/scanner/tree/main/LICENSE?raw=true) by [@camarm](https://github.com/camarm-dev).
+- Icon from [Fontawesome V5.15.4](https://fontawesome.com/v5/icons/brain?f=classic&s=solid).
+- Font "League Spartan".
 
 ## How it works ?
+
+The Magoole scanner is divided in two parts: 
+- **The finder**: recover a list of websites urls
+- **The crawler**: crawl and analyse website content
 
 ### Finder
 Finder files are contained in `finder/` folder.
@@ -32,7 +49,7 @@ pip install -r requirements.txt
     ```shell
     touch .mongopass && echo "username:password" > .mongopass
     ```
-   - Else modify MongoServer url on files finder/main.py and crawler/main.py.py at line `client = pymongo.MongoClient(f"mongodb+srv://yourmongoserver")`
+   - Or modify MongoServer url on file finder/main.py and crawler/main.py.py at line `client = pymongo.MongoClient(f"mongodb+srv://yourmongoserver")`
 <br>
 <br>
 3. Run the wanted python file
