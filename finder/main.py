@@ -37,7 +37,10 @@ def hasWebServer(domain: str) -> Tuple[bool, str]:
     secure_url = f'https://{domain}'
     try:
         url = requests.get(url).url
-        secure_response = requests.get(secure_url)
+        headers = {
+            'User-Agent': 'MagooleFinder/0.0'
+        }
+        secure_response = requests.get(secure_url, headers=headers)
         secure_url = secure_response.url
         if secure_response.ok:
             return True, secure_url
@@ -62,10 +65,10 @@ def isDomain(domain: str) -> bool:
             return False
         except dns.resolver.Timeout as error:
             print(f'⚠️ DNS Timed out: "{error.args[0]}"')
-        except dns.resolver.NoNameservers:
-            # Getting timed out
             time.sleep(0.1)
             return isDomain(domain)
+        except dns.resolver.NoNameservers as error:
+            print(f'⚠️ DNS encountered a problem: "{error.args[0]}"')
         except dns.name.LabelTooLong as e:
             print(domain)
             raise e
