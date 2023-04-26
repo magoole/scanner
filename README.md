@@ -1,5 +1,10 @@
+![](https://repository-images.githubusercontent.com/421378452/ef9e37ee-afcd-4c94-a486-b17620b0bef2)
+<div align="center">
+
 # Magoole finder and crawler
 This repository uses DNS query, bruteforce like domain search, crawling and more technologies to find websites and crawl and reference them on Magoole.
+
+</div>
 
 ## How it works ?
 
@@ -10,10 +15,11 @@ Finder files are contained in `finder/` folder.
 3. The finder will check every subdomain of the domain and apply the same tests.
 
 ### Crawler
-The crawler  take each queued website and crawl it.
-The scanner take all found domains and scan their websites to get opengraph information, title, icon, content of the page. The scanner is written in python.
-
-When those datas are collected, he simply adds a document to the final database and delete it from temporary database.
+Crawler files are contained in `crawler/` folder.
+1. The crawler take each queued website and perform http requests to recover his html pages.
+2. Using BM25, it tokenizes pages content and index them.
+3. Meta tags are analysed so images and medias can be referenced as well !
+4. Provides his work through a database.
 
 ## Try locally:
 1. Install requirements
@@ -42,7 +48,8 @@ You can modify `finder/config.json` to configure search parameters:
    "DNS": {
       "domain_max_length": 253,
       "subdomains": false,
-      "records": ["A", "AAAA"]
+      "records": ["A", "AAAA"],
+      "nameservers": ["1.1.1.1"]
    },
 
    "THREADING": {
