@@ -2,7 +2,8 @@
   "DNS": {
     "domain_max_length": 253,
     "subdomains": false,
-    "records": ["A", "AAAA"]
+    "records": ["A", "AAAA"],
+    "nameservers": ["8.8.8.8", "1.1.1.1"]
   },
 
   "THREADING": {

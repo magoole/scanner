@@ -59,7 +59,7 @@ def isDomain(domain: str) -> bool:
     """
     for record_type in DNS_RECORDS_TO_CHECK:
         try:
-            dns.resolver.resolve(domain, record_type)
+            RESOLVER.resolve(domain, record_type)
             return True
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
             return False
@@ -147,7 +147,9 @@ if __name__ == '__main__':
     else:
         print("❌ No config files found, exiting.")
         exit()
+    RESOLVER = dns.resolver.Resolver()
     EXTENSIONS = config['DOMAIN_EXTENSIONS']
+    RESOLVER.nameservers = config['DNS']['nameservers']
     DNS_RECORDS_TO_CHECK = config['DNS']['records']
     CHAR_LIMIT = config['DNS']['domain_max_length']
     SUBDOMAINS = config['DNS']['subdomains']
