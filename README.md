@@ -16,6 +16,7 @@ This repository uses DNS query, bruteforce like domain search, crawling and more
 
 ## Credits and acknowledgement
 - Source code under [CeCLL Licence V2.1](https://github.com/magoole/scanner/tree/main/LICENSE?raw=true) by [@camarm](https://github.com/camarm-dev).
+- Brand and logos under [CC BY-NC-ND 3.0 FR](https://creativecommons.org/licenses/by-nc-nd/3.0/fr/) by [@camarm](https://github.com/camarm-dev).
 - Icon from [Fontawesome V5.15.4](https://fontawesome.com/v5/icons/brain?f=classic&s=solid).
 - Font "League Spartan".
 
