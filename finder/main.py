@@ -188,7 +188,7 @@ if __name__ == '__main__':
     while len(PROCESSES) > 0:
         time.sleep(60 * 5)
         for thread in PROCESSES:
-            if not thread.isAlive():
+            if not thread.is_alive():
                 PROCESSES.remove(thread)
                 print(f'✅ Finished for `{thread.name}`.')
     print(f"{len(crawl_queue.find())} websites added to queue !")
