@@ -42,6 +42,7 @@ Crawler files are contained in `crawler/` folder.
 ## Try locally:
 1. Install requirements
 
+PyPI:
 ```shell
 pip install -r requirements.txt
 ```
@@ -67,11 +68,13 @@ You can modify `finder/config.json` to configure search parameters:
       "domain_max_length": 253,
       "subdomains": false,
       "records": ["A", "AAAA"],
-      "nameservers": ["1.1.1.1"]
+      "nameservers": ["1.1.1.1"],
+      "max_recursion": 10
    },
 
    "THREADING": {
-      "enabled": true
+      "enabled": true,
+      "threads": 8
    },
    "DOMAIN_EXTENSIONS": [".fr", ".com", ".eu.org", ".tech", ".info", ".dev"]
 }

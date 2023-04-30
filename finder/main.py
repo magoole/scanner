@@ -1,6 +1,8 @@
 import json
+import math
 import os.path
 import string
+import sys
 import threading
 import time
 from typing import Tuple
@@ -24,7 +26,7 @@ def addWebsiteToQueue(url: str) -> None:
         crawl_queue.insert_one({
             'url': url
         })
-    print('Website is already queued')
+    print('Website is already queued') if not SILENT else ...
 
 
 def hasWebServer(domain: str) -> Tuple[bool, str]:
@@ -51,27 +53,31 @@ def hasWebServer(domain: str) -> Tuple[bool, str]:
         return False, ''
 
 
-def isDomain(domain: str) -> bool:
+def isDomain(domain: str, recursion: int = 0) -> bool:
     """
     Check if the `domain` is registered by querying dns.
-    :param domain:
-    :return:bool
+    :param domain: domain to check
+    :param recursion:
+    :return: bool
     """
-    for record_type in DNS_RECORDS_TO_CHECK:
-        try:
-            RESOLVER.resolve(domain, record_type)
-            return True
-        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            return False
-        except dns.resolver.Timeout as error:
-            print(f'⚠️ DNS Timed out: "{error.args[0]}"')
-            time.sleep(0.1)
-            return isDomain(domain)
-        except dns.resolver.NoNameservers as error:
-            print(f'⚠️ DNS encountered a problem: "{error.args[0]}"')
-        except dns.name.LabelTooLong as e:
-            print(domain)
-            raise e
+    if recursion < DNS_MAX_TEST:
+        for record_type in DNS_RECORDS_TO_CHECK:
+            try:
+                RESOLVER.resolve(domain, record_type)
+                return True
+            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
+                return False
+            except dns.resolver.Timeout as error:
+                print(f'⚠️ DNS Timed out: "{error.args[0]}" for "{domain}"') if recursion and not SILENT < 2 else ...
+                time.sleep(0.1)
+                return isDomain(domain, recursion + 1)
+            except dns.resolver.NoNameservers as error:
+                print(f'⚠️ DNS encountered a problem: "{error.args[0]}"') if recursion and not SILENT < 2 else ...
+            except dns.name.LabelTooLong as error:
+                print(f'⚠️ DNS encountered a problem: "{error.args[0]}" for {domain}') if recursion < 2 and not SILENT else ...
+    else:
+        print(f'⚠️ DNS query aborted for domain: {domain} after {recursion} tests.') if not SILENT else ...
+        return False
 
 
 def processCheck(domain: str, is_subdomain: bool = False) -> None:
@@ -85,10 +91,10 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
         # Ignore because it's not a valid DNS label
         return
     if isDomain(domain):
-        print(f'Found domain name "{domain}"') if not is_subdomain else ...
+        print(f'Found domain name "{domain}"') if not is_subdomain and not SILENT else ...
         has_web_server, url = hasWebServer(domain)
         if has_web_server:
-            print(f'- [+] `{url}`')
+            print(f'- [+] ` {url} `')
             addWebsiteToQueue(url)
             if SUBDOMAINS:
                 # 63 is the max chars between two dot in a domain
@@ -98,18 +104,19 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
                     searchSubdomains(domain, '', 63)
 
 
-def search(domain: str, ext: str) -> None:
+def search(domain: str, ext: str, chars: list) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
     :param ext: domain extension
+    :param chars: a custom list of chars for the first recursion
     :return: None
     """
     if len(domain + ext) <= CHAR_LIMIT and len(domain) + 1 < 63:
-        for char in CHARS:
+        for char in chars:
             new_domain = domain + char
             processCheck(new_domain + ext)
-            search(new_domain, ext)
+            search(new_domain, ext, CHARS)
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
@@ -135,8 +142,24 @@ def searchFor(ext) -> None:
     :return: None
     """
     print(f'🔄 Searching for `{ext}` domains:')
-    search('', ext)
-    print(f'✅ Finished for `{ext}`.')
+    if THREADING:
+        divided_chars = []
+        parts = math.ceil(len(CHARS) / THREADS)
+        chunk_size = math.ceil(len(CHARS) / parts)
+        last_chunk = 0
+        for part in range(1, parts):
+            chunk = part * chunk_size
+            divided_chars.append(CHARS[last_chunk:chunk])
+            last_chunk = chunk
+        for chars in divided_chars:
+            thread_name = divided_chars.index(chars)
+            thread = threading.Thread(target=search, args=('', ext, chars), name=f'Thread n°{thread_name} for `{ext}`')
+            print(f'Starting thread n°{thread_name}') if not SILENT else ...
+            thread.start()
+            PROCESSES.append(thread)
+    else:
+        search('', ext, CHARS)
+        print(f'✅ Finished for `{ext}`.')
 
 
 if __name__ == '__main__':
@@ -147,22 +170,25 @@ if __name__ == '__main__':
     else:
         print("❌ No config files found, exiting.")
         exit()
+    PROCESSES = []
     RESOLVER = dns.resolver.Resolver()
     EXTENSIONS = config['DOMAIN_EXTENSIONS']
     RESOLVER.nameservers = config['DNS']['nameservers']
     DNS_RECORDS_TO_CHECK = config['DNS']['records']
+    DNS_MAX_TEST = config['DNS']['max_recursion']
     CHAR_LIMIT = config['DNS']['domain_max_length']
     SUBDOMAINS = config['DNS']['subdomains']
     THREADING = config['THREADING']['enabled']
+    THREADS = config['THREADING']['threads']
+    SILENT = True if '-s' in sys.argv or '-q' in sys.argv else False
     CHARS = list(f"{string.ascii_lowercase}{string.digits}-")  # possibles chars
-    PROCESSES = []
     for ext in EXTENSIONS:
-        if THREADING:
-            thread = threading.Thread(target=searchFor, args=[ext], name=f'Domain scanning: `{ext}`')
-            PROCESSES.append(thread)
-            continue
         searchFor(ext)
-    for thread in PROCESSES:
-        thread.start()
-        print(f'"{thread.name}" started')
-        thread.join()
+
+    while len(PROCESSES) > 0:
+        time.sleep(60 * 5)
+        for thread in PROCESSES:
+            if not thread.isAlive():
+                PROCESSES.remove(thread)
+                print(f'✅ Finished for `{thread.name}`.')
+    print(f"{len(crawl_queue.find())} websites added to queue !")

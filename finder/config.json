@@ -1,13 +1,15 @@
 {
   "DNS": {
-    "domain_max_length": 253,
+    "domain_max_length": 20,
     "subdomains": false,
     "records": ["A", "AAAA"],
-    "nameservers": ["8.8.8.8", "1.1.1.1"]
+    "nameservers": ["8.8.8.8", "1.1.1.1"],
+    "max_recursion": 10
   },
 
   "THREADING": {
-    "enabled": true
+    "enabled": true,
+    "threads": 8
   },
   "DOMAIN_EXTENSIONS": [".fr", ".com", ".eu.org", ".tech", ".info", ".dev"]
 }
