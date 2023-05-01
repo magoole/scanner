@@ -28,9 +28,9 @@ def addWebsiteToQueue(url: str) -> None:
         crawl_queue.insert_one({
             'url': url
         })
-
+    else:
+        print('Website is already queued') if not SILENT else ...
     client.close()
-    print('Website is already queued') if not SILENT else ...
 
 
 def hasWebServer(domain: str) -> Tuple[bool, str]:
