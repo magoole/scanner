@@ -111,6 +111,15 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
                 searchSubdomains(domain, '', 63)
 
 
+def array(obj: list) -> Union[numpy.ndarray]:
+    """
+    Convert list object `obj` to a faster C or GPU array
+    :param obj: object to transform
+    :return:
+    """
+    return numpy.array(obj)
+
+
 def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int = 63) -> None:
     """
     Recursive bruteforce search
@@ -124,9 +133,10 @@ def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int
         for i in range(1, length):
             for char in chars:
                 new_domain = domain + char
+                print(new_domain, length)
                 processCheck(new_domain + ext)
                 if i < length:
-                    search(new_domain, ext, numpy.array(CHARS), length - i)
+                    search(new_domain, ext, array(CHARS), length - i)
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
@@ -164,12 +174,12 @@ def searchFor(ext) -> None:
             last_chunk = chunk
         for chars in divided_chars:
             thread_name = divided_chars.index(chars)
-            thread = threading.Thread(target=search, args=('', ext, numpy.array(chars), length), name=f'Thread n°{thread_name} for `{ext}`')
+            thread = threading.Thread(target=search, args=('', ext, array(chars), length), name=f'Thread n°{thread_name} for `{ext}`')
             print(f'Starting thread n°{thread_name}') if not SILENT else ...
             thread.start()
             PROCESSES.append(thread)
     else:
-        search('', ext, numpy.array(CHARS), length)
+        search('', ext, array(CHARS), length)
         print(f'✅ Finished for `{ext}`.')
 
 
