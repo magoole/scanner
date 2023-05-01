@@ -51,6 +51,8 @@ def hasWebServer(domain: str) -> Tuple[bool, str]:
         return True, url
     except requests.exceptions.ConnectionError:
         return False, ''
+    except Exception:
+        return False, ''
 
 
 def isDomain(domain: str, recursion: int = 0) -> bool:
