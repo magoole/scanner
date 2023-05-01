@@ -199,4 +199,6 @@ if __name__ == '__main__':
         if thread.is_alive():
             thread.join()
         print(f'✅ Finished for `{thread.name}`.')
+    client.start_session()
+    crawl_queue = client.magoole.queue
     print(f"{len(crawl_queue.find())} websites added to queue !")
