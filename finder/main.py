@@ -5,7 +5,7 @@ import string
 import sys
 import threading
 import time
-from typing import Tuple, Any
+from typing import Tuple, Union
 import dns
 import pymongo
 import requests
@@ -111,7 +111,7 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
                 searchSubdomains(domain, '', 63)
 
 
-def search(domain: str, ext: str, chars: Any[list, numpy.ndarray], length: int = 63) -> None:
+def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int = 63) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
@@ -152,6 +152,7 @@ def searchFor(ext) -> None:
     :return: None
     """
     print(f'🔄 Searching for `{ext}` domains:')
+    length = CHAR_LIMIT if CHAR_LIMIT < 63 else 63
     if THREADING:
         divided_chars = []
         parts = THREADS
@@ -163,12 +164,12 @@ def searchFor(ext) -> None:
             last_chunk = chunk
         for chars in divided_chars:
             thread_name = divided_chars.index(chars)
-            thread = threading.Thread(target=search, args=('', ext, numpy.array(chars)), name=f'Thread n°{thread_name} for `{ext}`')
+            thread = threading.Thread(target=search, args=('', ext, numpy.array(chars), length), name=f'Thread n°{thread_name} for `{ext}`')
             print(f'Starting thread n°{thread_name}') if not SILENT else ...
             thread.start()
             PROCESSES.append(thread)
     else:
-        search('', ext, numpy.array(CHARS))
+        search('', ext, numpy.array(CHARS), length)
         print(f'✅ Finished for `{ext}`.')
 
 
