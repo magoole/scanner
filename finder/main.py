@@ -96,12 +96,12 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
         if has_web_server:
             print(f'- [+] ` {url} `')
             addWebsiteToQueue(url)
-            if SUBDOMAINS:
-                # 63 is the max chars between two dot in a domain
-                if CHAR_LIMIT - len(domain) < 63:
-                    searchSubdomains(domain, '', CHAR_LIMIT - len(domain))
-                else:
-                    searchSubdomains(domain, '', 63)
+        if SUBDOMAINS:
+            # 63 is the max chars between two dot in a domain
+            if CHAR_LIMIT - len(domain) < 63:
+                searchSubdomains(domain, '', CHAR_LIMIT - len(domain))
+            else:
+                searchSubdomains(domain, '', 63)
 
 
 def search(domain: str, ext: str, chars: list) -> None:
@@ -144,12 +144,12 @@ def searchFor(ext) -> None:
     print(f'🔄 Searching for `{ext}` domains:')
     if THREADING:
         divided_chars = []
-        parts = math.ceil(len(CHARS) / THREADS)
+        parts = THREADS
         chunk_size = math.ceil(len(CHARS) / parts)
         last_chunk = 0
         for part in range(1, parts):
             chunk = part * chunk_size
-            divided_chars.append(CHARS[last_chunk:chunk])
+            divided_chars.append(CHARS[last_chunk:chunk]) if not part == parts else divided_chars.append(CHARS[chunk:])
             last_chunk = chunk
         for chars in divided_chars:
             thread_name = divided_chars.index(chars)
@@ -185,10 +185,9 @@ if __name__ == '__main__':
     for ext in EXTENSIONS:
         searchFor(ext)
 
-    while len(PROCESSES) > 0:
-        time.sleep(60 * 5)
-        for thread in PROCESSES:
-            if not thread.is_alive():
-                PROCESSES.remove(thread)
-                print(f'✅ Finished for `{thread.name}`.')
+    print(f"Started {len(PROCESSES)} threads.")
+    for thread in PROCESSES:
+        if thread.is_alive():
+            thread.join()
+        print(f'✅ Finished for `{thread.name}`.')
     print(f"{len(crawl_queue.find())} websites added to queue !")
