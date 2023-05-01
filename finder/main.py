@@ -11,21 +11,25 @@ import pymongo
 import requests
 
 PASSWORD = open('.mongopass').read().replace('\n', '')
-client = pymongo.MongoClient(f"mongodb+srv://{PASSWORD}@cluster0.k244v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db = client.magoole
-crawl_queue = db.queue
+MONGO_URL = f"mongodb+srv://{PASSWORD}@cluster0.k244v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+client = pymongo.MongoClient(MONGO_URL)
 
 
 def addWebsiteToQueue(url: str) -> None:
     """
     Add website url to the crawling queue.
-    :param url: url of the wbesite to add
+    :param url: url of the website to add
     :return: None
     """
+    client.start_session()
+    crawl_queue = client.magoole.queue
+
     if crawl_queue.find_one({'url': url}) is None:
         crawl_queue.insert_one({
             'url': url
         })
+
+    client.close()
     print('Website is already queued') if not SILENT else ...
 
 
@@ -106,19 +110,22 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
                 searchSubdomains(domain, '', 63)
 
 
-def search(domain: str, ext: str, chars: list) -> None:
+def search(domain: str, ext: str, chars: list, length: int = 63) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
     :param ext: domain extension
     :param chars: a custom list of chars for the first recursion
+    :param length: insight deepness
     :return: None
     """
     if len(domain + ext) <= CHAR_LIMIT and len(domain) + 1 < 63:
-        for char in chars:
-            new_domain = domain + char
-            processCheck(new_domain + ext)
-            search(new_domain, ext, CHARS)
+        for i in range(1, length):
+            for char in chars:
+                new_domain = domain + char
+                processCheck(new_domain + ext)
+                if i < length:
+                    search(new_domain, ext, CHARS, length - i)
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
