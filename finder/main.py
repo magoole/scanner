@@ -5,10 +5,11 @@ import string
 import sys
 import threading
 import time
-from typing import Tuple
+from typing import Tuple, Any
 import dns
 import pymongo
 import requests
+import numpy
 
 PASSWORD = open('.mongopass').read().replace('\n', '')
 MONGO_URL = f"mongodb+srv://{PASSWORD}@cluster0.k244v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -110,7 +111,7 @@ def processCheck(domain: str, is_subdomain: bool = False) -> None:
                 searchSubdomains(domain, '', 63)
 
 
-def search(domain: str, ext: str, chars: list, length: int = 63) -> None:
+def search(domain: str, ext: str, chars: Any[list, numpy.ndarray], length: int = 63) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
@@ -125,7 +126,7 @@ def search(domain: str, ext: str, chars: list, length: int = 63) -> None:
                 new_domain = domain + char
                 processCheck(new_domain + ext)
                 if i < length:
-                    search(new_domain, ext, CHARS, length - i)
+                    search(new_domain, ext, numpy.array(CHARS), length - i)
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
@@ -162,12 +163,12 @@ def searchFor(ext) -> None:
             last_chunk = chunk
         for chars in divided_chars:
             thread_name = divided_chars.index(chars)
-            thread = threading.Thread(target=search, args=('', ext, chars), name=f'Thread n°{thread_name} for `{ext}`')
+            thread = threading.Thread(target=search, args=('', ext, numpy.array(chars)), name=f'Thread n°{thread_name} for `{ext}`')
             print(f'Starting thread n°{thread_name}') if not SILENT else ...
             thread.start()
             PROCESSES.append(thread)
     else:
-        search('', ext, CHARS)
+        search('', ext, numpy.array(CHARS))
         print(f'✅ Finished for `{ext}`.')
 
 
