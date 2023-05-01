@@ -133,7 +133,6 @@ def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int
         for i in range(1, length):
             for char in chars:
                 new_domain = domain + char
-                print(new_domain, length)
                 processCheck(new_domain + ext)
                 if i < length:
                     search(new_domain, ext, array(CHARS), length - i)
