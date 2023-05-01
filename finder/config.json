@@ -9,7 +9,7 @@
 
   "THREADING": {
     "enabled": true,
-    "threads": 8
+    "threads": 20
   },
   "DOMAIN_EXTENSIONS": [".fr", ".com", ".eu.org", ".tech", ".info", ".dev"]
 }
