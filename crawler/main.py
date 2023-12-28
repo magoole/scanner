@@ -47,13 +47,15 @@ def addPage(website: pymongo.collection.ObjectId, title: str, desc: str, terms: 
     }
 
     if pages.find_one({'site': website}):
-        page_id = pages.update_one({'site': website}, {'$set': page}).upserted_id
+        pages.update_one({'site': website}, {'$set': page})
+        page_id = pages.find_one({'site': website})['_id']
     else:
         page_id = pages.insert_one(page).inserted_id
 
     for term in terms:
         word, frequency = term
-        if search.find_one({'term': word.lower()}):
+        word = word.lower()
+        if search.find_one({'term': word}):
             term_pages = search.find_one({'term': word})['pages']
             term_pages.append((page_id, frequency))
             search.update_one({'term': word}, {'$set': {'pages': term_pages}})
@@ -100,7 +102,7 @@ def getPageTitle(parser: BeautifulSoup) -> str:
     :return: the description
     """
     if parser.find('title'):
-        title = parser.find('title').tetx
+        title = parser.find('title').text
     else:
         title = parser.find('h1').text
     return title.replace('\n', '') if title else parser.text[:20]
@@ -275,12 +277,13 @@ def iterateQueue() -> None:
     :return: None
     """
     for website in crawl_queue.find():
-        domain = urlparse(website).hostname
+        domain = urlparse(website['url']).hostname
         if isWebsiteBlackListed(domain):
             print(f'- [-] Ignoring ` {website} `: blacklisted !')
             continue
-        crawl('https://www.camarm.dev')
+        crawl(website)
         crawl_queue.delete_one(website)
+    exit()
 
 
 if __name__ == '__main__':

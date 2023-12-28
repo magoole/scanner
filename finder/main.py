@@ -120,7 +120,7 @@ def array(obj: list) -> Union[numpy.ndarray]:
     return numpy.array(obj)
 
 
-def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int = 63) -> None:
+def search(domain: str, ext: str, chars: Union[list, numpy.ndarray]) -> None:
     """
     Recursive bruteforce search
     :param domain: last fetched domain
@@ -130,12 +130,14 @@ def search(domain: str, ext: str, chars: Union[list, numpy.ndarray], length: int
     :return: None
     """
     if len(domain + ext) <= CHAR_LIMIT and len(domain) + 1 < 63:
-        for i in range(1, length):
-            for char in chars:
-                new_domain = domain + char
-                processCheck(new_domain + ext)
-                if i < length:
-                    search(new_domain, ext, array(CHARS), length - i)
+        next_domains = []
+        for char in chars:
+            new_domain = domain + char
+            print(new_domain)
+            next_domains.append(new_domain)
+            time.sleep(1)
+            # processCheck(new_domain + ext)
+        for domain in next_domains: search(domain, ext, array(CHARS))
 
 
 def searchSubdomains(domain: str, subdomain: str, limit: int) -> None:
@@ -161,7 +163,6 @@ def searchFor(ext) -> None:
     :return: None
     """
     print(f'🔄 Searching for `{ext}` domains:')
-    length = CHAR_LIMIT if CHAR_LIMIT < 63 else 63
     if THREADING:
         divided_chars = []
         parts = THREADS
@@ -173,12 +174,12 @@ def searchFor(ext) -> None:
             last_chunk = chunk
         for chars in divided_chars:
             thread_name = divided_chars.index(chars)
-            thread = threading.Thread(target=search, args=('', ext, array(chars), length), name=f'Thread n°{thread_name} for `{ext}`')
+            thread = threading.Thread(target=search, args=('', ext, array(chars)), name=f'Thread n°{thread_name} for `{ext}`')
             print(f'Starting thread n°{thread_name}') if not SILENT else ...
             thread.start()
             PROCESSES.append(thread)
     else:
-        search('', ext, array(CHARS), length)
+        search('', ext, array(CHARS))
         print(f'✅ Finished for `{ext}`.')
 
 
@@ -202,6 +203,7 @@ if __name__ == '__main__':
     THREADS = config['THREADING']['threads']
     SILENT = True if '-s' in sys.argv or '-q' in sys.argv else False
     CHARS = list(f"{string.ascii_lowercase}{string.digits}-")  # possibles chars
+    search('', '.fr', CHARS)
     for ext in EXTENSIONS:
         searchFor(ext)
 
